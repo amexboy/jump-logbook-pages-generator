@@ -152,11 +152,15 @@ const generatePdf = async () => {
   }
 
   // Generate and add logbook pages
-  const pagesToGenerate = endPage.value - startPage.value + 1;
+  let pagesToGenerate = endPage.value - startPage.value + 1;
+  if (pagesToGenerate % 2 !== 0) {
+    pagesToGenerate += 1;
+    endPage.value += 1;
+  }
 
-  for (let i = startPage.value - 1; i < pagesToGenerate; i += 2) {
-    const leftPageNumber = pagesToGenerate - (startPage.value - 1) - i;
+  for (let i = startPage.value - 1; i < pagesToGenerate/2; i ++) {
     const rightPageNumber = startPage.value + i;
+    const leftPageNumber = pagesToGenerate - (startPage.value - 1) - i;
 
     // Add a new page for the logbook sheets if a cover page was added
     // or if it's not the first sheet and no cover page was added.
