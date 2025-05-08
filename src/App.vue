@@ -158,7 +158,7 @@
           </button>
         </div>
         <!-- Modal Body / Iframe Container -->
-        <div class="flex-grow p-1 bg-gray-200"> {/* p-1 and bg-gray-200 to create a subtle border around iframe */}
+        <div class="flex-grow p-1 bg-gray-200">
           <iframe :src="pdfUrl" class="w-full h-full border-none"></iframe>
         </div>
       </div>
