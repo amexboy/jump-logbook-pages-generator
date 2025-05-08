@@ -384,6 +384,32 @@ watch([coverSvgSelectionMode, selectedPredefinedSvgKey], ([mode, key]) => {
   }
 }, {immediate: true});
 
+const addWatermark = (pdf, wPts, hPts) => {
+  const watermarkText = "Say Hi On Reddit: /u/_amanu";
+  const watermarkFontSize = 8;
+  const watermarkMarginFromBottom = 5; // points
+  const watermarkMarginFromRight = 10; // points
+
+  // Save current state
+  const originalFontSize = pdf.getFontSize();
+  const originalFont = pdf.getFont();
+  const originalTextColor = pdf.getTextColor(); // Returns hex, e.g., "#000000"
+
+  pdf.setFont('helvetica', 'normal'); // Use a standard font for the watermark
+  pdf.setFontSize(watermarkFontSize);
+  pdf.setTextColor(150, 150, 150); // Set text to a light gray
+
+  const x = wPts - watermarkMarginFromRight;
+  const y = hPts - watermarkMarginFromBottom;
+
+  pdf.text(watermarkText, x, y, { align: 'right' });
+
+  // Restore previous state
+  pdf.setFont(originalFont.fontName, originalFont.fontStyle);
+  pdf.setFontSize(originalFontSize);
+  pdf.setTextColor(originalTextColor); // setTextColor can handle the hex string
+};
+
 const generatePdf = async () => {
   generatingPdf.value = true;
   pdfUrl.value = null; // Clear previous PDF
@@ -422,6 +448,7 @@ const generatePdf = async () => {
       width: sheetWidthPts, // Cover page fills the entire sheet width
       height: sheetHeightPts, // Cover page fills the entire sheet height
     });
+    addWatermark(pdf, sheetWidthPts, sheetHeightPts); // Add watermark to the cover page
   }
 
   // Generate and add logbook pages
@@ -468,6 +495,7 @@ const generatePdf = async () => {
         });
       }
     }
+    addWatermark(pdf, sheetWidthPts, sheetHeightPts); // Add watermark to the current logbook sheet
   }
 
   const pdfBlob = pdf.output('blob');
