@@ -8,11 +8,12 @@
       </div>
 
       <fieldset class="layout-options">
-          <legend>Logbook Page Layout</legend>
-          <div v-for="(layout, key) in predefinedLogbookLayouts" :key="key">
-              <input type="radio" :id="'layout_' + key" :value="key" v-model="selectedLogbookLayoutKey" name="logbookLayoutSource"/>
-              <label :for="'layout_' + key">{{ layout.name }}</label>
-          </div>
+        <legend>Logbook Page Layout</legend>
+        <div v-for="(layout, key) in predefinedLogbookLayouts" :key="key">
+          <input type="radio" :id="'layout_' + key" :value="key" v-model="selectedLogbookLayoutKey"
+                 name="logbookLayoutSource"/>
+          <label :for="'layout_' + key">{{ layout.name }}</label>
+        </div>
       </fieldset>
 
       <div v-if="includeCoverPage" class="cover-options">
@@ -159,8 +160,8 @@ const predefinedCoverImages = {
 
 // Predefined Logbook Layouts
 const predefinedLogbookLayouts = {
-  'base': { name: 'Base Design', content: baseLogbookDesignSvg },
-  'skydiving': { name: 'Skydiving Design', content: skydivingLogbookDesignSvg },
+  'base': {name: 'Base Design', content: baseLogbookDesignSvg},
+  'skydiving': {name: 'Skydiving Design', content: skydivingLogbookDesignSvg},
 };
 
 
@@ -265,7 +266,7 @@ watch(selectedLogbookLayoutKey, (newKey) => {
   // For now, assuming both designs have the same aspect ratio or the difference is acceptable.
   // If aspect ratios differ significantly, logbookPageAspectRatio and related calculations
   // would need to become dynamic based on the selected layout.
-}, { immediate: true });
+}, {immediate: true});
 
 
 // Watchers to update current cover assets based on selections and load them
@@ -396,8 +397,10 @@ const generatePdf = async () => {
   }
 
   for (let i = startPage.value - 1; i < pagesToGenerate / 2; i++) {
-    const rightPageNumber = startPage.value + i;
-    const leftPageNumber = pagesToGenerate - (startPage.value - 1) - i;
+    const mainPageNumber = startPage.value + i;
+    const otherPageNumber = pagesToGenerate - (startPage.value - 1) - i;
+    const rightPageNumber = i % 2 === 0 ? mainPageNumber : otherPageNumber;
+    const leftPageNumber = i % 2 === 0 ? otherPageNumber : mainPageNumber;
 
     // Add a new page for the logbook sheets if a cover page was added
     // or if it's not the first sheet and no cover page was added.
