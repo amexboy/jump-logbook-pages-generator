@@ -7,6 +7,14 @@
         <label for="includeCover">Include Cover Page</label>
       </div>
 
+      <fieldset class="layout-options">
+          <legend>Logbook Page Layout</legend>
+          <div v-for="(layout, key) in predefinedLogbookLayouts" :key="key">
+              <input type="radio" :id="'layout_' + key" :value="key" v-model="selectedLogbookLayoutKey" name="logbookLayoutSource"/>
+              <label :for="'layout_' + key">{{ layout.name }}</label>
+          </div>
+      </fieldset>
+
       <div v-if="includeCoverPage" class="cover-options">
         <fieldset>
           <legend>Cover Background Image</legend>
@@ -108,7 +116,8 @@ import jsPDF from 'jspdf';
 // noinspection ES6UnusedImports
 import {svg2pdf} from 'svg2pdf.js';
 // Import your SVG files as raw text
-import logbookDesignSvg from '@/assets/base-design.svg?raw'; // Your logbook page design
+import baseLogbookDesignSvg from '@/assets/base-design.svg?raw'; // Base logbook page design
+import skydivingLogbookDesignSvg from '@/assets/skydiving-design.svg?raw'; // Skydiving logbook page design
 // Cover design and background image will be handled dynamically
 import '@/assets/Excalifont-normal.js';
 
@@ -121,7 +130,8 @@ const startPage = ref(1);
 const endPage = ref(10);
 const includeCoverPage = ref(true); // State for the cover page checkbox
 const generatingPdf = ref(false);
-const logbookSvgContent = ref(null); // For logbook pages
+const logbookSvgContent = ref(null); // Will be updated based on selection
+const selectedLogbookLayoutKey = ref('base'); // Default layout key
 // Removed coverSvgContent, will use currentCoverSvgContent
 const fontLoaded = ref(false);
 const pdfUrl = ref(null); // To store the URL of the generated PDF Blob
@@ -147,6 +157,13 @@ const predefinedCoverImages = {
   'default': {name: 'Default Background Image', src: defaultCoverImage},
 };
 
+// Predefined Logbook Layouts
+const predefinedLogbookLayouts = {
+  'base': { name: 'Base Design', content: baseLogbookDesignSvg },
+  'skydiving': { name: 'Skydiving Design', content: skydivingLogbookDesignSvg },
+};
+
+
 // Define physical dimensions in mm
 let padding = 3;
 const sheetWidthMM = 420;
@@ -161,9 +178,9 @@ const sheetHeightMM = logbookPageHeightMM + (padding * 2); // The sheet height i
 
 console.log("Document size", sheetWidthMM, sheetHeightMM)
 
-// Function to load the logbook SVG content (cover SVG is handled dynamically)
+// Function to load the logbook SVG content (now handled by watcher)
 const loadLogbookSvg = async () => {
-  logbookSvgContent.value = logbookDesignSvg;
+  // logbookSvgContent is now set dynamically by the watcher
 };
 
 // Function to load an image from a given src (path or dataURL)
@@ -240,6 +257,16 @@ const getLogbookSvgWithNumber = (pageNumber) => {
   const serializer = new XMLSerializer();
   return serializer.serializeToString(svgDoc);
 };
+
+// Watch for changes in logbook layout selection
+watch(selectedLogbookLayoutKey, (newKey) => {
+  logbookSvgContent.value = predefinedLogbookLayouts[newKey]?.content || null;
+  // Recalculate dimensions if aspect ratio changes - Placeholder for future enhancement if needed
+  // For now, assuming both designs have the same aspect ratio or the difference is acceptable.
+  // If aspect ratios differ significantly, logbookPageAspectRatio and related calculations
+  // would need to become dynamic based on the selected layout.
+}, { immediate: true });
+
 
 // Watchers to update current cover assets based on selections and load them
 watch([coverImageSelectionMode, selectedPredefinedImageKey], ([mode, key]) => {
