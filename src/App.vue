@@ -436,7 +436,6 @@ const generatePdf = async () => {
     // Here, we provide height and want it to fill that height, positioned right.
     pdf.addImage(img, 'PNG', imgX, 0, imgWidthPts, imgHeightPts);
 
-
     await pdf.svg(coverSvgElement, {
       x: 0,
       y: 0,
@@ -462,18 +461,6 @@ const generatePdf = async () => {
     // or if it's not the first sheet and no cover page was added.
     if (includeCoverPage.value || i > 0) {
       pdf.addPage();
-    }
-
-    // Add background image to the first logbook page if no cover page was included
-    // This uses the *cover's selected image* as the background for the first sheet.
-    if (!includeCoverPage.value && i === 0 && currentCoverImageSrc.value) {
-      try {
-        const img = await loadImageFromSrc(currentCoverImageSrc.value); // Load the current cover image
-        // Add image as full background to the first logbook sheet
-        pdf.addImage(img, 'PNG', 0, 0, sheetWidthPts, sheetHeightPts);
-      } catch (error) {
-        console.error("Failed to load background image for first logbook page:", error);
-      }
     }
 
     // Create a temporary div to hold the left page SVG for rendering
