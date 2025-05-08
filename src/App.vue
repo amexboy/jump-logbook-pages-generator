@@ -481,9 +481,8 @@ onBeforeUnmount(() => {
 <style scoped>
 /* General App Container Styles */
 .app-container {
-  max-width: 1200px;
-  margin: 20px auto;
-  padding: 20px;
+  margin: 0; /* Use full width, remove horizontal auto margins */
+  padding: 20px; /* Retain padding for content spacing from viewport edges */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   color: #333;
   background-color: #f4f7f9;
