@@ -47,9 +47,9 @@ import jsPDF from 'jspdf';
 import {svg2pdf} from 'svg2pdf.js';
 // Import your SVG files as raw text
 import logbookDesignSvg from '@/design.svg?raw'; // Your logbook page design
-import coverDesignSvg from '@/cover-design-masha.svg?raw'; // Your cover page design (assuming this filename)
+import coverDesignSvg from '@/assets/cover-page/default-cover-design.svg?raw'; // Your cover page design (assuming this filename)
 import '@/assets/Excalifont-normal.js';
-import backgroundImage from '@/assets/minimal-jump-v3.png'; // Import your background image
+import backgroundImage from '@/assets/cover-page/default-cover-image.png'; // Import your background image
 
 const startPage = ref(1);
 const endPage = ref(10);
