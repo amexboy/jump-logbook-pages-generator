@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="app-container">
     <h1>Generate Your Epic Logbook (Cover + Pages)</h1>
     <div class="controls">
       <div>
@@ -479,19 +479,200 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* General App Container Styles */
+.app-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  color: #333;
+  background-color: #f4f7f9;
+}
+
+/* Header */
+h1 {
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 40px;
+  font-size: 2rem;
+}
+
+/* Controls Section */
 .controls {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   display: flex;
-  gap: 10px;
+  flex-direction: column; /* Stack main control groups vertically */
+  gap: 25px; /* Space between control groups */
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Specific layout for label-on-top-of-input groups (e.g., "Start Page", "End Page") */
+.controls > div:has(label + input[type="number"]) {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Styling for the "Include Cover Page" checkbox and label line */
+.controls > div:has(input[type="checkbox"] + label) {
+  display: flex;
   align-items: center;
-  flex-wrap: wrap; /* Allow controls to wrap on smaller screens */
+  gap: 8px;
 }
 
-.pdf-display {
-  margin-top: 20px;
+/* Styling for fieldsets and their legends */
+.controls fieldset {
+  border: 1px solid #dce4e9;
+  padding: 20px;
+  border-radius: 8px;
 }
 
-.full-width-iframe {
+.controls legend {
+  font-weight: 600;
+  color: #34495e;
+  padding: 0 8px;
+  font-size: 1.1em;
+  margin-bottom: 10px;
+}
+
+/* Styling for groups within fieldsets (e.g., radio button lines) */
+.controls fieldset > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.controls fieldset > div > select,
+.controls fieldset > div > input[type="file"] {
+  flex-grow: 1; /* Allow select/file input to take up remaining space */
+  min-width: 150px; /* Ensure a minimum width */
+}
+
+/* Input and Label Styling */
+label {
+  font-weight: 500;
+  color: #4a5568;
+  font-size: 0.95rem;
+}
+
+input[type="checkbox"], input[type="radio"] {
+  margin-right: 5px;
+  accent-color: #4299e1; /* Blue accent */
+  width: 1.15em;
+  height: 1.15em;
+}
+
+input[type="number"],
+input[type="file"],
+select {
+  padding: 12px 15px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 1rem;
   width: 100%;
+  box-sizing: border-box;
+  background-color: #fff;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+input[type="number"]:focus,
+input[type="file"]:focus,
+select:focus {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
+  outline: none;
+}
+
+input[type="file"] {
+  cursor: pointer;
+}
+
+input[type="file"]::file-selector-button {
+  padding: 8px 15px;
+  margin-right: 10px;
+  background-color: #edf2f7;
+  color: #2d3748;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background-color: #e2e8f0;
+}
+
+button {
+  padding: 12px 25px;
+  background-color: #4299e1; /* Primary blue */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  align-self: flex-start; /* Align button to the start of the flex column (.controls) */
+}
+
+button:hover:not(:disabled) {
+  background-color: #3182ce; /* Darker blue */
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Cover Options: two fieldsets side-by-side */
+.cover-options {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  flex-wrap: wrap; /* Allow fieldsets to stack on smaller screens */
+}
+
+.cover-options > fieldset {
+  flex: 1; /* Distribute space between the two fieldsets */
+  min-width: 280px; /* Minimum width before stacking */
+}
+
+/* PDF Display and Status Message */
+.pdf-display, .status-message {
+  margin-top: 40px;
+  padding: 25px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.pdf-display h2 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+.status-message p {
+  color: #718096;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+iframe {
+  border: 1px solid #dce4e9;
+  border-radius: 8px;
+  width: 100%; /* Responsive width */
+  max-width: 1200px; /* Consistent max-width */
+  display: block; /* Remove extra space below */
+  margin: 0 auto; /* Center if max-width is hit */
+  background-color: #fff; /* Ensure background for PDF iframe */
 }
 </style>
