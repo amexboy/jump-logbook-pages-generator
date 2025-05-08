@@ -1,73 +1,111 @@
 <template>
-  <div class="app-container">
-    <h1>Generate Your Epic Logbook (Cover + Pages)</h1>
-    <div class="controls">
-      <div>
-        <input type="checkbox" id="includeCover" v-model="includeCoverPage"/>
-        <label for="includeCover">Include Cover Page</label>
+  <div class="min-h-screen bg-gray-100 p-4 sm:p-8 font-sans">
+    <h1 class="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-8 sm:mb-12">
+      Generate Your Epic Logbook (Cover + Pages)
+    </h1>
+    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg space-y-6 mb-8 sm:mb-12 max-w-4xl mx-auto">
+      <!-- Include Cover Page Checkbox -->
+      <div class="flex items-center">
+        <input type="checkbox" id="includeCover" v-model="includeCoverPage"
+               class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"/>
+        <label for="includeCover" class="ml-2 block text-sm text-gray-900">Include Cover Page</label>
       </div>
 
-      <fieldset class="layout-options">
-        <legend>Logbook Page Layout</legend>
-        <div v-for="(layout, key) in predefinedLogbookLayouts" :key="key">
-          <input type="radio" :id="'layout_' + key" :value="key" v-model="selectedLogbookLayoutKey"
-                 name="logbookLayoutSource"/>
-          <label :for="'layout_' + key">{{ layout.name }}</label>
+      <!-- Logbook Page Layout -->
+      <fieldset class="border border-gray-300 p-4 rounded-md">
+        <legend class="text-lg font-semibold text-gray-700 px-1 mb-2">Logbook Page Layout</legend>
+        <div class="space-y-2">
+          <div v-for="(layout, key) in predefinedLogbookLayouts" :key="key" class="flex items-center">
+            <input type="radio" :id="'layout_' + key" :value="key" v-model="selectedLogbookLayoutKey"
+                   name="logbookLayoutSource"
+                   class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"/>
+            <label :for="'layout_' + key" class="ml-2 block text-sm text-gray-900">{{ layout.name }}</label>
+          </div>
         </div>
       </fieldset>
 
-      <div v-if="includeCoverPage" class="cover-options">
-        <fieldset>
-          <legend>Cover Background Image</legend>
-          <div>
-            <input type="radio" id="coverImagePredefined" value="predefined" v-model="coverImageSelectionMode"
-                   name="coverImageSource"/>
-            <label for="coverImagePredefined">Use Predefined</label>
-            <select v-if="coverImageSelectionMode === 'predefined'" v-model="selectedPredefinedImageKey">
+      <!-- Cover Options (Conditional) -->
+      <div v-if="includeCoverPage" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Cover Background Image Fieldset -->
+        <fieldset class="border border-gray-300 p-4 rounded-md space-y-3">
+          <legend class="text-lg font-semibold text-gray-700 px-1 mb-2">Cover Background Image</legend>
+          <!-- Predefined Image -->
+          <div class="space-y-1">
+            <div class="flex items-center">
+              <input type="radio" id="coverImagePredefined" value="predefined" v-model="coverImageSelectionMode"
+                     name="coverImageSource"
+                     class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"/>
+              <label for="coverImagePredefined" class="ml-2 block text-sm text-gray-900">Use Predefined</label>
+            </div>
+            <select v-if="coverImageSelectionMode === 'predefined'" v-model="selectedPredefinedImageKey"
+                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
               <option v-for="(img, key) in predefinedCoverImages" :key="key" :value="key">
                 {{ img.name }}
               </option>
             </select>
           </div>
-          <div>
-            <input type="radio" id="coverImageUpload" value="upload" v-model="coverImageSelectionMode"
-                   name="coverImageSource"/>
-            <label for="coverImageUpload">Upload Image</label>
+          <!-- Upload Image -->
+          <div class="space-y-1">
+            <div class="flex items-center">
+              <input type="radio" id="coverImageUpload" value="upload" v-model="coverImageSelectionMode"
+                     name="coverImageSource"
+                     class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"/>
+              <label for="coverImageUpload" class="ml-2 block text-sm text-gray-900">Upload Image</label>
+            </div>
             <input v-if="coverImageSelectionMode === 'upload'" type="file" @change="handleCoverImageUpload"
-                   accept="image/*"/>
+                   accept="image/*"
+                   class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
           </div>
         </fieldset>
 
-        <fieldset>
-          <legend>Cover SVG Design</legend>
-          <div>
-            <input type="radio" id="coverSvgPredefined" value="predefined" v-model="coverSvgSelectionMode"
-                   name="coverSvgSource"/>
-            <label for="coverSvgPredefined">Use Predefined</label>
-            <select v-if="coverSvgSelectionMode === 'predefined'" v-model="selectedPredefinedSvgKey">
+        <!-- Cover SVG Design Fieldset -->
+        <fieldset class="border border-gray-300 p-4 rounded-md space-y-3">
+          <legend class="text-lg font-semibold text-gray-700 px-1 mb-2">Cover SVG Design</legend>
+          <!-- Predefined SVG -->
+          <div class="space-y-1">
+            <div class="flex items-center">
+              <input type="radio" id="coverSvgPredefined" value="predefined" v-model="coverSvgSelectionMode"
+                     name="coverSvgSource"
+                     class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"/>
+              <label for="coverSvgPredefined" class="ml-2 block text-sm text-gray-900">Use Predefined</label>
+            </div>
+            <select v-if="coverSvgSelectionMode === 'predefined'" v-model="selectedPredefinedSvgKey"
+                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
               <option v-for="(svg, key) in predefinedCoverSvgs" :key="key" :value="key">
                 {{ svg.name }}
               </option>
             </select>
           </div>
-          <div>
-            <input type="radio" id="coverSvgUpload" value="upload" v-model="coverSvgSelectionMode"
-                   name="coverSvgSource"/>
-            <label for="coverSvgUpload">Upload SVG</label>
+          <!-- Upload SVG -->
+          <div class="space-y-1">
+            <div class="flex items-center">
+              <input type="radio" id="coverSvgUpload" value="upload" v-model="coverSvgSelectionMode"
+                     name="coverSvgSource"
+                     class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"/>
+              <label for="coverSvgUpload" class="ml-2 block text-sm text-gray-900">Upload SVG</label>
+            </div>
             <input v-if="coverSvgSelectionMode === 'upload'" type="file" @change="handleCoverSvgUpload"
-                   accept=".svg, image/svg+xml"/>
+                   accept=".svg, image/svg+xml"
+                   class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
           </div>
         </fieldset>
       </div>
 
-      <div>
-        <label for="startPage">From Page:</label>
-        <input type="number" id="startPage" v-model.number="startPage" min="1"/>
+      <!-- Page Range Inputs -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div>
+          <label for="startPage" class="block text-sm font-medium text-gray-700">From Page:</label>
+          <input type="number" id="startPage" v-model.number="startPage" min="1"
+                 class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
+        </div>
+        <div>
+          <label for="endPage" class="block text-sm font-medium text-gray-700">To Page:</label>
+          <input type="number" id="endPage" v-model.number="endPage" :min="startPage"
+                 class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
+        </div>
       </div>
-      <div>
-        <label for="endPage">To Page:</label>
-        <input type="number" id="endPage" v-model.number="endPage" :min="startPage"/>
-      </div>
+
+      <!-- Generate PDF Button -->
       <button
           @click="generatePdf"
           :disabled="
@@ -77,19 +115,16 @@
             endPage < startPage ||
             !fontLoaded
           "
+          class="w-full sm:w-auto flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {{ generatingPdf ? "Generating..." : "Generate PDF" }}
       </button>
     </div>
 
-    <!-- PDF Display Area -->
-    <div v-if="pdfUrl" class="pdf-display">
-      <h2>Generated PDF</h2>
-      <iframe :src="pdfUrl" height="600px" width="1200"></iframe>
-    </div>
-    <div v-else class="status-message">
-      <div v-if="generatingPdf">Generating PDF...</div>
-      <div v-else>
+    <!-- Status Message Area (when no PDF is displayed) -->
+    <div v-if="!pdfUrl" class="bg-white p-6 rounded-xl shadow-lg text-center text-gray-600 max-w-4xl mx-auto">
+      <div v-if="generatingPdf" class="text-lg font-semibold">Generating PDF...</div>
+      <div v-else class="space-y-2">
         <p v-if="!logbookSvgContent">Loading Logbook Design...</p>
         <p v-if="includeCoverPage && !currentCoverSvgContent">
           <span v-if="coverSvgSelectionMode === 'upload' && !uploadedSvgFile">Please upload a cover SVG design or select a predefined one.</span>
@@ -103,16 +138,37 @@
           <span v-else>Waiting for Cover Image...</span>
         </p>
         <p v-if="includeCoverPage && currentCoverImageSrc && !backgroundImageLoaded">Loading Cover Image...</p>
-        <p v-if="logbookSvgContent && (!includeCoverPage || (currentCoverSvgContent && currentCoverImageSrc && backgroundImageLoaded))">
+        <p v-if="logbookSvgContent && (!includeCoverPage || (currentCoverSvgContent && currentCoverImageSrc && backgroundImageLoaded))"
+           class="text-green-600 font-semibold">
           Ready to generate PDF.
         </p>
       </div>
     </div>
+
+    <!-- PDF Modal -->
+    <div v-if="pdfUrl"
+         class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out"
+         @click.self="closePdfModal"> <!-- Close modal on backdrop click -->
+      <div class="bg-white rounded-lg shadow-xl w-full h-full max-w-6xl max-h-[95vh] flex flex-col overflow-hidden">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center p-4 border-b border-gray-200">
+          <h2 class="text-xl font-semibold text-gray-800">Generated PDF</h2>
+          <button @click="closePdfModal"
+                  class="text-gray-500 hover:text-gray-700 focus:outline-none text-2xl leading-none">&times;
+          </button>
+        </div>
+        <!-- Modal Body / Iframe Container -->
+        <div class="flex-grow p-1 bg-gray-200"> {/* p-1 and bg-gray-200 to create a subtle border around iframe */}
+          <iframe :src="pdfUrl" class="w-full h-full border-none"></iframe>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import {onBeforeUnmount, onMounted, ref, watch} from 'vue'; // Added watch
+import {onBeforeUnmount, onMounted, ref, watch} from 'vue';
 import jsPDF from 'jspdf';
 // noinspection ES6UnusedImports
 import {svg2pdf} from 'svg2pdf.js';
@@ -470,6 +526,13 @@ onMounted(async () => {
   // The user will click "Generate PDF" when ready.
 });
 
+const closePdfModal = () => {
+  if (pdfUrl.value) {
+    URL.revokeObjectURL(pdfUrl.value);
+    pdfUrl.value = null;
+  }
+};
+
 // Clean up the Blob URL when the component is unmounted
 onBeforeUnmount(() => {
   if (pdfUrl.value) {
@@ -477,201 +540,3 @@ onBeforeUnmount(() => {
   }
 });
 </script>
-
-<style scoped>
-/* General App Container Styles */
-.app-container {
-  margin: 0; /* Use full width, remove horizontal auto margins */
-  padding: 20px; /* Retain padding for content spacing from viewport edges */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  color: #333;
-  background-color: #f4f7f9;
-}
-
-/* Header */
-h1 {
-  color: #2c3e50;
-  text-align: center;
-  margin-bottom: 40px;
-  font-size: 2rem;
-}
-
-/* Controls Section */
-.controls {
-  margin-bottom: 30px;
-  display: flex;
-  flex-direction: column; /* Stack main control groups vertically */
-  gap: 25px; /* Space between control groups */
-  background-color: #ffffff;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-/* Specific layout for label-on-top-of-input groups (e.g., "Start Page", "End Page") */
-.controls > div:has(label + input[type="number"]) {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* Styling for the "Include Cover Page" checkbox and label line */
-.controls > div:has(input[type="checkbox"] + label) {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Styling for fieldsets and their legends */
-.controls fieldset {
-  border: 1px solid #dce4e9;
-  padding: 20px;
-  border-radius: 8px;
-}
-
-.controls legend {
-  font-weight: 600;
-  color: #34495e;
-  padding: 0 8px;
-  font-size: 1.1em;
-  margin-bottom: 10px;
-}
-
-/* Styling for groups within fieldsets (e.g., radio button lines) */
-.controls fieldset > div {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.controls fieldset > div > select,
-.controls fieldset > div > input[type="file"] {
-  flex-grow: 1; /* Allow select/file input to take up remaining space */
-  min-width: 150px; /* Ensure a minimum width */
-}
-
-/* Input and Label Styling */
-label {
-  font-weight: 500;
-  color: #4a5568;
-  font-size: 0.95rem;
-}
-
-input[type="checkbox"], input[type="radio"] {
-  margin-right: 5px;
-  accent-color: #4299e1; /* Blue accent */
-  width: 1.15em;
-  height: 1.15em;
-}
-
-input[type="number"],
-input[type="file"],
-select {
-  padding: 12px 15px;
-  border: 1px solid #cbd5e0;
-  border-radius: 6px;
-  font-size: 1rem;
-  width: 100%;
-  box-sizing: border-box;
-  background-color: #fff;
-  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-input[type="number"]:focus,
-input[type="file"]:focus,
-select:focus {
-  border-color: #4299e1;
-  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
-  outline: none;
-}
-
-input[type="file"] {
-  cursor: pointer;
-}
-
-input[type="file"]::file-selector-button {
-  padding: 8px 15px;
-  margin-right: 10px;
-  background-color: #edf2f7;
-  color: #2d3748;
-  border: 1px solid #cbd5e0;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-input[type="file"]::file-selector-button:hover {
-  background-color: #e2e8f0;
-}
-
-button {
-  padding: 12px 25px;
-  background-color: #4299e1; /* Primary blue */
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 1.05rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  align-self: flex-start; /* Align button to the start of the flex column (.controls) */
-}
-
-button:hover:not(:disabled) {
-  background-color: #3182ce; /* Darker blue */
-  transform: translateY(-1px);
-}
-
-button:disabled {
-  background-color: #a0aec0;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-/* Cover Options: two fieldsets side-by-side */
-.cover-options {
-  display: flex;
-  flex-direction: row;
-  gap: 20px;
-  flex-wrap: wrap; /* Allow fieldsets to stack on smaller screens */
-}
-
-.cover-options > fieldset {
-  flex: 1; /* Distribute space between the two fieldsets */
-  min-width: 280px; /* Minimum width before stacking */
-}
-
-/* PDF Display and Status Message */
-.pdf-display, .status-message {
-  margin-top: 40px;
-  padding: 25px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  text-align: center;
-}
-
-.pdf-display h2 {
-  color: #2c3e50;
-  margin-bottom: 20px;
-  font-size: 1.5rem;
-}
-
-.status-message p {
-  color: #718096;
-  font-size: 1.1rem;
-  line-height: 1.6;
-}
-
-iframe {
-  border: 1px solid #dce4e9;
-  border-radius: 8px;
-  width: 100%; /* Responsive width */
-  max-width: 1200px; /* Consistent max-width */
-  display: block; /* Remove extra space below */
-  margin: 0 auto; /* Center if max-width is hit */
-  background-color: #fff; /* Ensure background for PDF iframe */
-}
-</style>
