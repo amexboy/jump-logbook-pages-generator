@@ -24,12 +24,6 @@
         </div>
       </fieldset>
 
-      <!-- Include Jump Number Checkbox -->
-      <div class="flex items-center mt-4">
-        <input type="checkbox" id="includeJumpNumber" v-model="includeJumpNumber"
-               class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"/>
-        <label for="includeJumpNumber" class="ml-2 block text-sm text-gray-900">Include Jump Number on Pages</label>
-      </div>
 
       <!-- Cover Options (Conditional) -->
       <div v-if="includeCoverPage" class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -98,15 +92,22 @@
         </fieldset>
       </div>
 
+      <!-- Include Jump Number Checkbox -->
+      <div class="flex items-center mt-4">
+        <input type="checkbox" id="includeJumpNumber" v-model="includeJumpNumber"
+               class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"/>
+        <label for="includeJumpNumber" class="ml-2 block text-sm text-gray-900">Include Jump Number on Pages</label>
+      </div>
+
       <!-- Page Range Inputs -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
-          <label for="startPage" class="block text-sm font-medium text-gray-700">From Page:</label>
+          <label for="startPage" class="block text-sm font-medium text-gray-700">From Jump Number:</label>
           <input type="number" id="startPage" v-model.number="startPage" min="1"
                  class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
         </div>
         <div>
-          <label for="endPage" class="block text-sm font-medium text-gray-700">To Page:</label>
+          <label for="endPage" class="block text-sm font-medium text-gray-700">To Jump Number:</label>
           <input type="number" id="endPage" v-model.number="endPage" :min="startPage"
                  class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
         </div>
