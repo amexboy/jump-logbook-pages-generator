@@ -11,7 +11,8 @@
         <fieldset>
           <legend>Cover Background Image</legend>
           <div>
-            <input type="radio" id="coverImagePredefined" value="predefined" v-model="coverImageSelectionMode" name="coverImageSource"/>
+            <input type="radio" id="coverImagePredefined" value="predefined" v-model="coverImageSelectionMode"
+                   name="coverImageSource"/>
             <label for="coverImagePredefined">Use Predefined</label>
             <select v-if="coverImageSelectionMode === 'predefined'" v-model="selectedPredefinedImageKey">
               <option v-for="(img, key) in predefinedCoverImages" :key="key" :value="key">
@@ -20,16 +21,19 @@
             </select>
           </div>
           <div>
-            <input type="radio" id="coverImageUpload" value="upload" v-model="coverImageSelectionMode" name="coverImageSource"/>
+            <input type="radio" id="coverImageUpload" value="upload" v-model="coverImageSelectionMode"
+                   name="coverImageSource"/>
             <label for="coverImageUpload">Upload Image</label>
-            <input v-if="coverImageSelectionMode === 'upload'" type="file" @change="handleCoverImageUpload" accept="image/*"/>
+            <input v-if="coverImageSelectionMode === 'upload'" type="file" @change="handleCoverImageUpload"
+                   accept="image/*"/>
           </div>
         </fieldset>
 
         <fieldset>
           <legend>Cover SVG Design</legend>
           <div>
-            <input type="radio" id="coverSvgPredefined" value="predefined" v-model="coverSvgSelectionMode" name="coverSvgSource"/>
+            <input type="radio" id="coverSvgPredefined" value="predefined" v-model="coverSvgSelectionMode"
+                   name="coverSvgSource"/>
             <label for="coverSvgPredefined">Use Predefined</label>
             <select v-if="coverSvgSelectionMode === 'predefined'" v-model="selectedPredefinedSvgKey">
               <option v-for="(svg, key) in predefinedCoverSvgs" :key="key" :value="key">
@@ -38,9 +42,11 @@
             </select>
           </div>
           <div>
-            <input type="radio" id="coverSvgUpload" value="upload" v-model="coverSvgSelectionMode" name="coverSvgSource"/>
+            <input type="radio" id="coverSvgUpload" value="upload" v-model="coverSvgSelectionMode"
+                   name="coverSvgSource"/>
             <label for="coverSvgUpload">Upload SVG</label>
-            <input v-if="coverSvgSelectionMode === 'upload'" type="file" @change="handleCoverSvgUpload" accept=".svg, image/svg+xml"/>
+            <input v-if="coverSvgSelectionMode === 'upload'" type="file" @change="handleCoverSvgUpload"
+                   accept=".svg, image/svg+xml"/>
           </div>
         </fieldset>
       </div>
@@ -83,7 +89,8 @@
         </p>
         <p v-if="includeCoverPage && !currentCoverImageSrc">
           <span v-if="coverImageSelectionMode === 'upload' && !uploadedImageFile">Please upload a cover image or select a predefined one.</span>
-          <span v-else-if="coverImageSelectionMode === 'predefined' && !predefinedCoverImages[selectedPredefinedImageKey]">Select a predefined cover image.</span>
+          <span
+              v-else-if="coverImageSelectionMode === 'predefined' && !predefinedCoverImages[selectedPredefinedImageKey]">Select a predefined cover image.</span>
           <span v-else>Waiting for Cover Image...</span>
         </p>
         <p v-if="includeCoverPage && currentCoverImageSrc && !backgroundImageLoaded">Loading Cover Image...</p>
@@ -101,15 +108,13 @@ import jsPDF from 'jspdf';
 // noinspection ES6UnusedImports
 import {svg2pdf} from 'svg2pdf.js';
 // Import your SVG files as raw text
-import logbookDesignSvg from '@/design.svg?raw'; // Your logbook page design
+import logbookDesignSvg from '@/assets/base-design.svg?raw'; // Your logbook page design
 // Cover design and background image will be handled dynamically
 import '@/assets/Excalifont-normal.js';
 
 // Predefined assets imports
 import defaultCoverDesignSvg from '@/assets/cover-page/default-cover-design.svg?raw';
-import mashaCoverDesignSvg from '@/assets/cover-page/cover-design-masha.svg?raw';
 import defaultCoverImage from '@/assets/cover-page/default-cover-image.png';
-import minimalJumpV2Image from '@/assets/cover-page/minimal-jump-v2.png';
 
 
 const startPage = ref(1);
@@ -135,13 +140,11 @@ const currentCoverSvgContent = ref(null); // Stores string content of the curren
 
 // Predefined assets collections
 const predefinedCoverSvgs = {
-  'default': { name: 'Default SVG Design', content: defaultCoverDesignSvg },
-  'masha': { name: 'Masha SVG Design', content: mashaCoverDesignSvg },
+  'default': {name: 'Default SVG Design', content: defaultCoverDesignSvg},
 };
 
 const predefinedCoverImages = {
-  'default': { name: 'Default Background Image', src: defaultCoverImage },
-  'minimalV2': { name: 'Minimal Jump V2 Image', src: minimalJumpV2Image },
+  'default': {name: 'Default Background Image', src: defaultCoverImage},
 };
 
 // Define physical dimensions in mm
@@ -250,17 +253,23 @@ watch([coverImageSelectionMode, selectedPredefinedImageKey], ([mode, key]) => {
     if (uploadedImageFile.value) {
       // If a file was previously uploaded and user switches back to 'upload' mode
       const reader = new FileReader();
-      reader.onload = (e) => { currentCoverImageSrc.value = e.target.result; };
-      reader.onerror = (err) => { console.error("Error re-reading uploaded image:", err); currentCoverImageSrc.value = null; backgroundImageLoaded.value = false;};
+      reader.onload = (e) => {
+        currentCoverImageSrc.value = e.target.result;
+      };
+      reader.onerror = (err) => {
+        console.error("Error re-reading uploaded image:", err);
+        currentCoverImageSrc.value = null;
+        backgroundImageLoaded.value = false;
+      };
       reader.readAsDataURL(uploadedImageFile.value);
     } else {
       // No file uploaded yet for 'upload' mode, or clear if switching to upload without a file
       if (currentCoverImageSrc.value !== null) { // Avoid redundant sets if already null
-          currentCoverImageSrc.value = null;
+        currentCoverImageSrc.value = null;
       }
     }
   }
-}, { immediate: true });
+}, {immediate: true});
 
 // Watch currentCoverImageSrc to load the image and update backgroundImageLoaded
 watch(currentCoverImageSrc, async (newSrc, oldSrc) => {
@@ -277,7 +286,7 @@ watch(currentCoverImageSrc, async (newSrc, oldSrc) => {
   } else {
     backgroundImageLoaded.value = false; // No source, so not loaded
   }
-}, { immediate: true }); // immediate: true to attempt loading the initial image source
+}, {immediate: true}); // immediate: true to attempt loading the initial image source
 
 // Watch for changes in cover SVG selection
 watch([coverSvgSelectionMode, selectedPredefinedSvgKey], ([mode, key]) => {
@@ -287,14 +296,19 @@ watch([coverSvgSelectionMode, selectedPredefinedSvgKey], ([mode, key]) => {
     if (uploadedSvgFile.value) {
       // If an SVG file was previously uploaded
       const reader = new FileReader();
-      reader.onload = (e) => { currentCoverSvgContent.value = e.target.result; };
-      reader.onerror = (err) => { console.error("Error re-reading uploaded SVG:", err); currentCoverSvgContent.value = null; };
+      reader.onload = (e) => {
+        currentCoverSvgContent.value = e.target.result;
+      };
+      reader.onerror = (err) => {
+        console.error("Error re-reading uploaded SVG:", err);
+        currentCoverSvgContent.value = null;
+      };
       reader.readAsText(uploadedSvgFile.value);
     } else {
       currentCoverSvgContent.value = null; // No SVG uploaded yet for 'upload' mode
     }
   }
-}, { immediate: true });
+}, {immediate: true});
 
 const generatePdf = async () => {
   generatingPdf.value = true;
@@ -320,28 +334,27 @@ const generatePdf = async () => {
       // await loadImageFromSrc(currentCoverImageSrc.value); // This might be redundant if button is properly disabled.
     }
 
-    try {
-      const img = await loadImageFromSrc(currentCoverImageSrc.value); // Load the current image
+    const img = await loadImageFromSrc(currentCoverImageSrc.value); // Load the current image
 
-      const imgAspectRatio = img.width / img.height;
-      const imgHeightPts = sheetHeightPts; // Make image height match page height
-      const imgWidthPts = imgHeightPts * imgAspectRatio;
-      // Align image to the right of the cover page
-      const imgX = sheetWidthPts - imgWidthPts;
-
-
-      const parser = new DOMParser();
-      const svgDoc = parser.parseFromString(currentCoverSvgContent.value, 'image/svg+xml');
-      const coverSvgElement = svgDoc.documentElement; // Get the root SVG element
-
-      // Add background image to the cover page
-      // Using 0 for width/height tells jsPDF to auto-calculate based on aspect ratio if one dimension is provided.
-      // Here, we provide height and want it to fill that height, positioned right.
-      pdf.addImage(img, 'PNG', imgX, 0, imgWidthPts, imgHeightPts);
+    const imgAspectRatio = img.width / img.height;
+    const imgHeightPts = sheetHeightPts; // Make image height match page height
+    const imgWidthPts = imgHeightPts * imgAspectRatio;
+    // Align image to the right of the cover page
+    const imgX = sheetWidthPts - imgWidthPts;
 
 
-      await pdf.svg(coverSvgElement, {
-        x: 0,
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(currentCoverSvgContent.value, 'image/svg+xml');
+    const coverSvgElement = svgDoc.documentElement; // Get the root SVG element
+
+    // Add background image to the cover page
+    // Using 0 for width/height tells jsPDF to auto-calculate based on aspect ratio if one dimension is provided.
+    // Here, we provide height and want it to fill that height, positioned right.
+    pdf.addImage(img, 'PNG', imgX, 0, imgWidthPts, imgHeightPts);
+
+
+    await pdf.svg(coverSvgElement, {
+      x: 0,
       y: 0,
       width: sheetWidthPts, // Cover page fills the entire sheet width
       height: sheetHeightPts, // Cover page fills the entire sheet height
@@ -355,7 +368,7 @@ const generatePdf = async () => {
     endPage.value += 1;
   }
 
-  for (let i = startPage.value - 1; i < pagesToGenerate/2; i ++) {
+  for (let i = startPage.value - 1; i < pagesToGenerate / 2; i++) {
     const rightPageNumber = startPage.value + i;
     const leftPageNumber = pagesToGenerate - (startPage.value - 1) - i;
 
