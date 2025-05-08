@@ -170,12 +170,9 @@
 <script setup>
 import {onBeforeUnmount, onMounted, ref, watch} from 'vue';
 import jsPDF from 'jspdf';
-// noinspection ES6UnusedImports
 import {svg2pdf} from 'svg2pdf.js';
-// Import your SVG files as raw text
 import baseLogbookDesignSvg from '@/assets/base-design.svg?raw'; // Base logbook page design
 import skydivingLogbookDesignSvg from '@/assets/skydiving-design.svg?raw'; // Skydiving logbook page design
-// Cover design and background image will be handled dynamically
 import '@/assets/Excalifont-normal.js';
 
 // Predefined assets imports
@@ -185,25 +182,24 @@ import defaultCoverImage from '@/assets/cover-page/default-cover-image.png';
 
 const startPage = ref(1);
 const endPage = ref(10);
-const includeCoverPage = ref(true); // State for the cover page checkbox
+const includeCoverPage = ref(true);
 const generatingPdf = ref(false);
-const logbookSvgContent = ref(null); // Will be updated based on selection
-const selectedLogbookLayoutKey = ref('base'); // Default layout key
-// Removed coverSvgContent, will use currentCoverSvgContent
+const logbookSvgContent = ref(null);
+const selectedLogbookLayoutKey = ref('base');
 const fontLoaded = ref(false);
-const pdfUrl = ref(null); // To store the URL of the generated PDF Blob
-const backgroundImageLoaded = ref(false); // To track if the *current* cover image is loaded
+const pdfUrl = ref(null);
+const backgroundImageLoaded = ref(false);
 
 // New refs for cover page customization
-const coverImageSelectionMode = ref('predefined'); // 'predefined' or 'upload'
-const selectedPredefinedImageKey = ref('default'); // Key for predefinedCoverImages
-const uploadedImageFile = ref(null); // Stores the File object for uploaded image
-const currentCoverImageSrc = ref(null); // Stores path or dataURL of the current image for the cover
+const coverImageSelectionMode = ref('predefined');
+const selectedPredefinedImageKey = ref('default');
+const uploadedImageFile = ref(null);
+const currentCoverImageSrc = ref(null);
 
-const coverSvgSelectionMode = ref('predefined'); // 'predefined' or 'upload'
-const selectedPredefinedSvgKey = ref('default'); // Key for predefinedCoverSvgs
-const uploadedSvgFile = ref(null); // Stores the File object for uploaded SVG
-const currentCoverSvgContent = ref(null); // Stores string content of the current cover SVG
+const coverSvgSelectionMode = ref('predefined');
+const selectedPredefinedSvgKey = ref('default');
+const uploadedSvgFile = ref(null);
+const currentCoverSvgContent = ref(null);
 
 // Predefined assets collections
 const predefinedCoverSvgs = {
@@ -228,33 +224,29 @@ const gutterWidthMM = 10; // Example gutter width for binding
 const logbookPageWidthMM = (sheetWidthMM - gutterWidthMM) / 2;
 
 
-// You MUST adjust this based on your LOGBOOK SVG's actual content aspect ratio
 const logbookPageAspectRatio = 223.279 / 124.609 // 843.888469714838 / 470.963060858978;
 const logbookPageHeightMM = logbookPageWidthMM / logbookPageAspectRatio;
-const sheetHeightMM = logbookPageHeightMM + (padding * 2); // The sheet height is determined by the page height
+const sheetHeightMM = logbookPageHeightMM + (padding * 2);
 
 console.log("Document size", sheetWidthMM, sheetHeightMM)
 
-// Function to load the logbook SVG content (now handled by watcher)
 const loadLogbookSvg = async () => {
-  // logbookSvgContent is now set dynamically by the watcher
 };
 
-// Function to load an image from a given src (path or dataURL)
 const loadImageFromSrc = (src) => {
   return new Promise((resolve, reject) => {
     if (!src) {
-      backgroundImageLoaded.value = false; // Ensure flag is false if no src
+      backgroundImageLoaded.value = false;
       reject(new Error("Image source is not provided."));
       return;
     }
     const img = new Image();
     img.onload = () => {
-      backgroundImageLoaded.value = true; // Set flag upon successful load
+      backgroundImageLoaded.value = true;
       resolve(img);
     };
     img.onerror = (err) => {
-      backgroundImageLoaded.value = false; // Ensure flag is false on error
+      backgroundImageLoaded.value = false;
       console.error("Error loading image from src:", src, err);
       reject(err);
     };
@@ -266,10 +258,10 @@ const loadImageFromSrc = (src) => {
 const handleCoverImageUpload = (event) => {
   const file = event.target.files[0];
   if (file) {
-    uploadedImageFile.value = file; // Store the file object
+    uploadedImageFile.value = file;
     const reader = new FileReader();
     reader.onload = (e) => {
-      currentCoverImageSrc.value = e.target.result; // This will trigger the watcher to load the image
+      currentCoverImageSrc.value = e.target.result;
     };
     reader.onerror = (err) => {
       console.error("Error reading uploaded image file:", err);
@@ -284,7 +276,7 @@ const handleCoverImageUpload = (event) => {
 const handleCoverSvgUpload = (event) => {
   const file = event.target.files[0];
   if (file) {
-    uploadedSvgFile.value = file; // Store the file object
+    uploadedSvgFile.value = file;
     const reader = new FileReader();
     reader.onload = (e) => {
       currentCoverSvgContent.value = e.target.result;
@@ -303,39 +295,29 @@ const getLogbookSvgWithNumber = (pageNumber) => {
 
   const parser = new DOMParser();
   const svgDoc = parser.parseFromString(logbookSvgContent.value, 'image/svg+xml');
-  const textElement = svgDoc.getElementById('pageNumberText'); // Replace 'pageNumberText' with the actual ID
+  const textElement = svgDoc.getElementById('pageNumberText');
 
   if (textElement) {
     textElement.textContent = pageNumber !== undefined ? `# ${pageNumber}` : '';
-    // Ensure the font-family is set on the text element in your SVG
-    // For example, add style="font-family: 'Excalifont-Regular';" to the text element in design.svg
   }
 
   const serializer = new XMLSerializer();
   return serializer.serializeToString(svgDoc);
 };
 
-// Watch for changes in logbook layout selection
 watch(selectedLogbookLayoutKey, (newKey) => {
   logbookSvgContent.value = predefinedLogbookLayouts[newKey]?.content || null;
-  // Recalculate dimensions if aspect ratio changes - Placeholder for future enhancement if needed
-  // For now, assuming both designs have the same aspect ratio or the difference is acceptable.
-  // If aspect ratios differ significantly, logbookPageAspectRatio and related calculations
-  // would need to become dynamic based on the selected layout.
 }, {immediate: true});
 
 
-// Watchers to update current cover assets based on selections and load them
 watch([coverImageSelectionMode, selectedPredefinedImageKey], ([mode, key]) => {
   if (mode === 'predefined') {
     const newSrc = predefinedCoverImages[key]?.src || null;
-    // Only update if the source is actually different to avoid re-triggering image load unnecessarily
     if (currentCoverImageSrc.value !== newSrc) {
       currentCoverImageSrc.value = newSrc;
     }
-  } else { // mode === 'upload'
+  } else {
     if (uploadedImageFile.value) {
-      // If a file was previously uploaded and user switches back to 'upload' mode
       const reader = new FileReader();
       reader.onload = (e) => {
         currentCoverImageSrc.value = e.target.result;
@@ -347,38 +329,33 @@ watch([coverImageSelectionMode, selectedPredefinedImageKey], ([mode, key]) => {
       };
       reader.readAsDataURL(uploadedImageFile.value);
     } else {
-      // No file uploaded yet for 'upload' mode, or clear if switching to upload without a file
-      if (currentCoverImageSrc.value !== null) { // Avoid redundant sets if already null
+      if (currentCoverImageSrc.value !== null) {
         currentCoverImageSrc.value = null;
       }
     }
   }
 }, {immediate: true});
 
-// Watch currentCoverImageSrc to load the image and update backgroundImageLoaded
 watch(currentCoverImageSrc, async (newSrc, oldSrc) => {
   if (newSrc) {
-    if (newSrc !== oldSrc || !backgroundImageLoaded.value) { // Load if new src or if previous attempt failed/not loaded
-      backgroundImageLoaded.value = false; // Reset loading state
+    if (newSrc !== oldSrc || !backgroundImageLoaded.value) {
+      backgroundImageLoaded.value = false;
       try {
-        await loadImageFromSrc(newSrc); // loadImageFromSrc sets backgroundImageLoaded to true on success
+        await loadImageFromSrc(newSrc);
       } catch (error) {
         console.error("Watcher: Error loading image:", error);
-        // backgroundImageLoaded is set to false by loadImageFromSrc on error
       }
     }
   } else {
-    backgroundImageLoaded.value = false; // No source, so not loaded
+    backgroundImageLoaded.value = false;
   }
-}, {immediate: true}); // immediate: true to attempt loading the initial image source
+}, {immediate: true});
 
-// Watch for changes in cover SVG selection
 watch([coverSvgSelectionMode, selectedPredefinedSvgKey], ([mode, key]) => {
   if (mode === 'predefined') {
     currentCoverSvgContent.value = predefinedCoverSvgs[key]?.content || null;
-  } else { // mode === 'upload'
+  } else {
     if (uploadedSvgFile.value) {
-      // If an SVG file was previously uploaded
       const reader = new FileReader();
       reader.onload = (e) => {
         currentCoverSvgContent.value = e.target.result;
@@ -389,7 +366,7 @@ watch([coverSvgSelectionMode, selectedPredefinedSvgKey], ([mode, key]) => {
       };
       reader.readAsText(uploadedSvgFile.value);
     } else {
-      currentCoverSvgContent.value = null; // No SVG uploaded yet for 'upload' mode
+      currentCoverSvgContent.value = null;
     }
   }
 }, {immediate: true});
@@ -407,33 +384,23 @@ const generatePdf = async () => {
   // Set PDF size and orientation
   const pdf = new jsPDF('l', 'pt', [sheetWidthPts, sheetHeightPts]);
 
-  // Add Cover Page (Optional)
   if (includeCoverPage.value && currentCoverSvgContent.value && currentCoverImageSrc.value) {
     if (!backgroundImageLoaded.value) {
-      // This check is important. If image isn't loaded, we shouldn't proceed or should show an error.
-      // For robustness, generatePdf should ideally only be callable if backgroundImageLoaded is true (if cover is included).
-      // The button's :disabled state should enforce this.
       console.error("Cover image not loaded. PDF generation might be incorrect.");
-      // Optionally, try to load it again, though watcher should handle this.
-      // await loadImageFromSrc(currentCoverImageSrc.value); // This might be redundant if button is properly disabled.
     }
 
-    const img = await loadImageFromSrc(currentCoverImageSrc.value); // Load the current image
+    const img = await loadImageFromSrc(currentCoverImageSrc.value);
 
     const imgAspectRatio = img.width / img.height;
-    const imgHeightPts = sheetHeightPts; // Make image height match page height
+    const imgHeightPts = sheetHeightPts;
     const imgWidthPts = imgHeightPts * imgAspectRatio;
-    // Align image to the right of the cover page
     const imgX = sheetWidthPts - imgWidthPts;
 
 
     const parser = new DOMParser();
     const svgDoc = parser.parseFromString(currentCoverSvgContent.value, 'image/svg+xml');
-    const coverSvgElement = svgDoc.documentElement; // Get the root SVG element
+    const coverSvgElement = svgDoc.documentElement;
 
-    // Add background image to the cover page
-    // Using 0 for width/height tells jsPDF to auto-calculate based on aspect ratio if one dimension is provided.
-    // Here, we provide height and want it to fill that height, positioned right.
     pdf.addImage(img, 'PNG', imgX, 0, imgWidthPts, imgHeightPts);
 
     await pdf.svg(coverSvgElement, {
@@ -457,13 +424,10 @@ const generatePdf = async () => {
     const rightPageNumber = i % 2 === 0 ? mainPageNumber : otherPageNumber;
     const leftPageNumber = i % 2 === 0 ? otherPageNumber : mainPageNumber;
 
-    // Add a new page for the logbook sheets if a cover page was added
-    // or if it's not the first sheet and no cover page was added.
     if (includeCoverPage.value || i > 0) {
       pdf.addPage();
     }
 
-    // Create a temporary div to hold the left page SVG for rendering
     if (leftPageNumber !== undefined) {
       const tempDivLeft = document.createElement('div');
       tempDivLeft.innerHTML = getLogbookSvgWithNumber(leftPageNumber);
@@ -478,7 +442,6 @@ const generatePdf = async () => {
       }
     }
 
-    // Create a temporary div to hold the right page SVG for rendering
     if (rightPageNumber !== undefined) {
       const tempDivRight = document.createElement('div');
       tempDivRight.innerHTML = getLogbookSvgWithNumber(rightPageNumber);
@@ -494,23 +457,15 @@ const generatePdf = async () => {
     }
   }
 
-  // Get the PDF data as a Blob
   const pdfBlob = pdf.output('blob');
-
-  // Create a URL for the Blob
   pdfUrl.value = URL.createObjectURL(pdfBlob);
 
   generatingPdf.value = false;
 };
 
 onMounted(async () => {
-  // Load essential logbook SVG
   await loadLogbookSvg();
-  fontLoaded.value = true; // Assuming font is loaded via the import
-
-  // Initial cover assets (SVG content and image source) are set by immediate watchers.
-  // The image itself is loaded asynchronously by the currentCoverImageSrc watcher.
-  // The user will click "Generate PDF" when ready.
+  fontLoaded.value = true;
 });
 
 const closePdfModal = () => {
@@ -520,7 +475,6 @@ const closePdfModal = () => {
   }
 };
 
-// Clean up the Blob URL when the component is unmounted
 onBeforeUnmount(() => {
   if (pdfUrl.value) {
     URL.revokeObjectURL(pdfUrl.value);
