@@ -24,6 +24,13 @@
         </div>
       </fieldset>
 
+      <!-- Include Jump Number Checkbox -->
+      <div class="flex items-center mt-4">
+        <input type="checkbox" id="includeJumpNumber" v-model="includeJumpNumber"
+               class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"/>
+        <label for="includeJumpNumber" class="ml-2 block text-sm text-gray-900">Include Jump Number on Pages</label>
+      </div>
+
       <!-- Cover Options (Conditional) -->
       <div v-if="includeCoverPage" class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Cover Background Image Fieldset -->
@@ -183,6 +190,7 @@ import defaultCoverImage from '@/assets/cover-page/default-cover-image.png';
 const startPage = ref(1);
 const endPage = ref(10);
 const includeCoverPage = ref(true);
+const includeJumpNumber = ref(true); // Added for jump number toggle
 const generatingPdf = ref(false);
 const logbookSvgContent = ref(null);
 const selectedLogbookLayoutKey = ref('base');
@@ -298,7 +306,11 @@ const getLogbookSvgWithNumber = (pageNumber) => {
   const textElement = svgDoc.getElementById('pageNumberText');
 
   if (textElement) {
-    textElement.textContent = pageNumber !== undefined ? `# ${pageNumber}` : '';
+    if (includeJumpNumber.value) {
+      textElement.textContent = pageNumber !== undefined ? `# ${pageNumber}` : '';
+    } else {
+      textElement.textContent = ''; // Clear jump number if toggle is off
+    }
   }
 
   const serializer = new XMLSerializer();
