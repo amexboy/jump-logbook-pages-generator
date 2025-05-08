@@ -3,113 +3,95 @@
     <h1>Generate Your Epic Logbook (Cover + Pages)</h1>
     <div class="controls">
       <div>
-        <input type="checkbox" id="includeCover" v-model="includeCoverPage">
+        <input type="checkbox" id="includeCover" v-model="includeCoverPage"/>
         <label for="includeCover">Include Cover Page</label>
       </div>
       <div>
         <label for="startPage">From Page:</label>
-        <input type="number" id="startPage" v-model.number="startPage" min="1">
+        <input type="number" id="startPage" v-model.number="startPage" min="1"/>
       </div>
       <div>
         <label for="endPage">To Page:</label>
-        <input type="number" id="endPage" v-model.number="endPage" :min="startPage">
+        <input type="number" id="endPage" v-model.number="endPage" :min="startPage"/>
       </div>
-      <button @click="generatePdf" :disabled="generatingPdf || !logbookSvgContent || (includeCoverPage && !coverSvgContent) || endPage < startPage || !fontLoaded">
-        {{ generatingPdf ? 'Generating...' : 'Generate PDF' }}
+      <button
+          @click="generatePdf"
+          :disabled="
+          generatingPdf ||
+          !logbookSvgContent ||
+          (includeCoverPage && !coverSvgContent) ||
+          endPage < startPage ||
+          !fontLoaded ||
+          !backgroundImageLoaded
+        "
+      >
+        {{ generatingPdf ? "Generating..." : "Generate PDF" }}
       </button>
     </div>
 
-    <div class="printable-sheets-container" ref="printableSheetsContainer" v-if="logbookSvgContent">
-      <!-- Cover Page Preview (Optional) -->
-      <div class="printable-sheet" v-if="includeCoverPage && coverSvgContent">
-        <div class="cover-page-svg">
-          <div class="svg-wrapper" v-html="coverSvgContent"></div>
-        </div>
-      </div>
-
-      <!-- Logbook Pages Preview -->
-      <div
-          v-for="(sheet, sheetIndex) in printableSheets"
-          :key="sheetIndex"
-          class="printable-sheet"
-      >
-        <div class="logbook-page-svg left-page">
-          <div class="svg-wrapper" v-html="getLogbookSvgWithNumber(sheet[0])"></div>
-        </div>
-        <div class="gutter"></div>
-        <div class="logbook-page-svg right-page">
-          <div class="svg-wrapper" v-html="getLogbookSvgWithNumber(sheet[1])"></div>
-        </div>
-      </div>
+    <!-- PDF Display Area -->
+    <div v-if="pdfUrl" class="pdf-display">
+      <h2>Generated PDF</h2>
+      <iframe :src="pdfUrl" height="600px" width="1200"></iframe>
     </div>
     <div v-else>
-      Loading SVGs...
+      {{ logbookSvgContent && backgroundImageLoaded ? 'Generating PDF...' : 'Loading Resources...' }}
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, nextTick } from 'vue';
+import {onBeforeUnmount, onMounted, ref} from 'vue';
 import jsPDF from 'jspdf';
 // noinspection ES6UnusedImports
 import {svg2pdf} from 'svg2pdf.js';
 // Import your SVG files as raw text
 import logbookDesignSvg from '@/design.svg?raw'; // Your logbook page design
-import coverDesignSvg from '@/cover-design.svg?raw'; // Your cover page design (assuming this filename)
+import coverDesignSvg from '@/cover-design-masha.svg?raw'; // Your cover page design (assuming this filename)
 import '@/assets/Excalifont-normal.js';
+import backgroundImage from '@/assets/minimal-jump-v3.png'; // Import your background image
 
 const startPage = ref(1);
 const endPage = ref(10);
 const includeCoverPage = ref(true); // State for the cover page checkbox
 const generatingPdf = ref(false);
-const printableSheetsContainer = ref(null);
 const logbookSvgContent = ref(null);
 const coverSvgContent = ref(null); // To hold the cover page SVG content
 const fontLoaded = ref(false);
+const pdfUrl = ref(null); // To store the URL of the generated PDF Blob
+const backgroundImageLoaded = ref(false); // To track if the background image is loaded
 
 // Define physical dimensions in mm
-const sheetWidthMM = 210;
-const gutterWidthMM = 7.5; // Example gutter width for binding
+let padding = 3;
+const sheetWidthMM = 420;
+const gutterWidthMM = 10; // Example gutter width for binding
 const logbookPageWidthMM = (sheetWidthMM - gutterWidthMM) / 2;
 
+
 // You MUST adjust this based on your LOGBOOK SVG's actual content aspect ratio
-const logbookPageAspectRatio = 843.888469714838 / 470.963060858978;
+const logbookPageAspectRatio = 223.279 / 124.609 // 843.888469714838 / 470.963060858978;
 const logbookPageHeightMM = logbookPageWidthMM / logbookPageAspectRatio;
-const sheetHeightMM = logbookPageHeightMM; // The sheet height is determined by the page height
+const sheetHeightMM = logbookPageHeightMM + (padding * 2); // The sheet height is determined by the page height
 
-// **You will also need to determine the aspect ratio of your COVER PAGE SVG**
-// Assuming your cover page SVG has a viewBox or dimensions that match the sheet aspect ratio
-const coverPageAspectRatio = sheetWidthMM / sheetHeightMM;
-
-
-// Computed property to get the range of pages to generate
-const pageRange = computed(() => {
-  const start = Math.max(1, startPage.value);
-  const end = Math.max(start, endPage.value);
-  const range = [];
-  for (let i = start; i <= end; i++) {
-    range.push(i);
-  }
-  // Ensure an even number of pages for pairing
-  if (range.length % 2 !== 0) {
-    range.push(undefined); // Add a blank page representation
-  }
-  return range;
-});
-
-// Computed property to group pages into printable sheets (pairs)
-const printableSheets = computed(() => {
-  const sheets = [];
-  for (let i = 0; i < pageRange.value.length; i += 2) {
-    sheets.push([pageRange.value[i], pageRange.value[i + 1]]);
-  }
-  return sheets;
-});
+console.log("Document size", sheetWidthMM, sheetHeightMM)
 
 // Function to load the SVG content
 const loadSvgs = async () => {
   logbookSvgContent.value = logbookDesignSvg;
   coverSvgContent.value = coverDesignSvg; // Load the cover page SVG
+};
+
+// Function to load the background image
+const loadImage = () => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      backgroundImageLoaded.value = true;
+      resolve(img);
+    };
+    img.onerror = reject;
+    img.src = backgroundImage; // Use the imported image URL
+  });
 };
 
 // Function to get the Logbook SVG content with the updated page number
@@ -132,6 +114,7 @@ const getLogbookSvgWithNumber = (pageNumber) => {
 
 const generatePdf = async () => {
   generatingPdf.value = true;
+  pdfUrl.value = null; // Clear previous PDF
 
   // Convert dimensions from mm to points
   const sheetWidthPts = sheetWidthMM * 2.83465;
@@ -142,13 +125,23 @@ const generatePdf = async () => {
   // Set PDF size and orientation
   const pdf = new jsPDF('l', 'pt', [sheetWidthPts, sheetHeightPts]);
 
+  // Ensure background image is loaded before adding it
+  const img = await loadImage();
 
-  await nextTick(); // Ensure the DOM is updated for logbook pages
+  const imgAspectRatio = img.width / img.height;
+  const imgHeightPts = sheetHeightPts; // Make image height match page height
+  const imgWidthPts = imgHeightPts * imgAspectRatio;
+  const imgX = sheetWidthPts - imgWidthPts; // Calculate x to align right
+
+
   // Add Cover Page (Optional)
   if (includeCoverPage.value && coverSvgContent.value) {
     const parser = new DOMParser();
     const svgDoc = parser.parseFromString(coverSvgContent.value, 'image/svg+xml');
     const coverSvgElement = svgDoc.documentElement; // Get the root SVG element
+
+    // Add background image to the cover page
+    pdf.addImage(img, 'PNG', imgX, 0, 0, imgHeightPts); // Add image before SVG
 
     await pdf.svg(coverSvgElement, {
       x: 0,
@@ -158,12 +151,12 @@ const generatePdf = async () => {
     });
   }
 
-  const sheets = printableSheetsContainer.value.querySelectorAll('.printable-sheet');
+  // Generate and add logbook pages
+  const pagesToGenerate = endPage.value - startPage.value + 1;
 
-  for (let i = 0; i < sheets.length; i++) {
-    const sheet = sheets[i];
-    const leftPageSvgWrapper = sheet.querySelector('.left-page .svg-wrapper');
-    const rightPageSvgWrapper = sheet.querySelector('.right-page .svg-wrapper');
+  for (let i = startPage.value - 1; i < pagesToGenerate; i += 2) {
+    const leftPageNumber = pagesToGenerate - (startPage.value - 1) - i;
+    const rightPageNumber = startPage.value + i;
 
     // Add a new page for the logbook sheets if a cover page was added
     // or if it's not the first sheet and no cover page was added.
@@ -171,107 +164,82 @@ const generatePdf = async () => {
       pdf.addPage();
     }
 
-
-    // Add left page SVG
-    if (leftPageSvgWrapper && leftPageSvgWrapper.firstElementChild) {
-      const leftSvgElement = leftPageSvgWrapper.firstElementChild;
-      await pdf.svg(leftSvgElement, {
-        x: 0,
-        y: 0,
-        width: logbookPageWidthPts,
-        height: sheetHeightPts,
-      });
+    // Add background image to the first logbook page if no cover page was included
+    if (!includeCoverPage.value && i === 0) {
+      pdf.addImage(img, 'PNG', 0, 0, sheetWidthPts, sheetHeightPts); // Add image as background to the first logbook page
     }
 
-    // Add right page SVG
-    if (rightPageSvgWrapper && rightPageSvgWrapper.firstElementChild) {
-      const rightSvgElement = rightPageSvgWrapper.firstElementChild;
-      await pdf.svg(rightSvgElement, {
-        x: logbookPageWidthPts + gutterWidthPts,
-        y: 0,
-        width: logbookPageWidthPts,
-        height: sheetHeightPts,
-      });
+    // Create a temporary div to hold the left page SVG for rendering
+    if (leftPageNumber !== undefined) {
+      const tempDivLeft = document.createElement('div');
+      tempDivLeft.innerHTML = getLogbookSvgWithNumber(leftPageNumber);
+      const leftSvgElement = tempDivLeft.firstElementChild;
+      if (leftSvgElement) {
+        await pdf.svg(leftSvgElement, {
+          x: padding,
+          y: 0,
+          width: logbookPageWidthPts,
+          height: sheetHeightPts,
+        });
+      }
+    }
+
+    // Create a temporary div to hold the right page SVG for rendering
+    if (rightPageNumber !== undefined) {
+      const tempDivRight = document.createElement('div');
+      tempDivRight.innerHTML = getLogbookSvgWithNumber(rightPageNumber);
+      const rightSvgElement = tempDivRight.firstElementChild;
+      if (rightSvgElement) {
+        await pdf.svg(rightSvgElement, {
+          x: logbookPageWidthPts + gutterWidthPts - padding,
+          y: 0,
+          width: logbookPageWidthPts,
+          height: sheetHeightPts,
+        });
+      }
     }
   }
 
-  pdf.save('epic_logbook_with_cover.pdf');
+  // Get the PDF data as a Blob
+  const pdfBlob = pdf.output('blob');
+
+  // Create a URL for the Blob
+  pdfUrl.value = URL.createObjectURL(pdfBlob);
+
   generatingPdf.value = false;
 };
 
 onMounted(async () => {
-  await loadSvgs(); // Load both SVGs
-  // You might need to load the font data here or ensure it's available
-  fontLoaded.value = true;
+  await Promise.all([loadSvgs(), loadImage()]); // Load SVGs and image concurrently
+  fontLoaded.value = true; // Assuming font is loaded via the import
+  // Generate PDF on mount if all resources are loaded
+  if (logbookSvgContent.value && (includeCoverPage.value ? coverSvgContent.value : true) && fontLoaded.value && backgroundImageLoaded.value) {
+    generatePdf();
+  }
+});
+
+// Clean up the Blob URL when the component is unmounted
+onBeforeUnmount(() => {
+  if (pdfUrl.value) {
+    URL.revokeObjectURL(pdfUrl.value);
+  }
 });
 </script>
 
 <style scoped>
-.printable-sheets-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px; /* Space between sheets */
-}
-
-.printable-sheet {
-  border: 1px solid #ccc;
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-  margin: 0 auto;
-  background-color: white;
-  overflow: hidden;
-
-  width: calc(v-bind(sheetWidthMM) * 1mm);
-  height: calc(v-bind(sheetHeightMM) * 1mm);
-}
-
-.cover-page-svg {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-
-.logbook-page-svg {
-  box-sizing: border-box;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  width: calc(v-bind(logbookPageWidthMM) * 1mm);
-  height: 100%;
-}
-
-.gutter {
-  width: calc(v-bind(gutterWidthMM) * 1mm);
-  height: 100%;
-  background-color: #eee;
-}
-
-
-.svg-wrapper {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.svg-wrapper svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  /* Adjust preserveAspectRatio based on your SVG's viewBox */
-}
-
 .controls {
   margin-bottom: 20px;
   display: flex;
   gap: 10px;
   align-items: center;
   flex-wrap: wrap; /* Allow controls to wrap on smaller screens */
+}
+
+.pdf-display {
+  margin-top: 20px;
+}
+
+.full-width-iframe {
+  width: 100%;
 }
 </style>
